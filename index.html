@@ -12,19 +12,17 @@
 <body>
 <core-ajax
         auto
-        url="http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,6&cluster=no"
+        url="http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,6&cluster=no&units=imperial"
         handleAs="json"></core-ajax>
 <table>
     <template id="tableTemplate" repeat="{{cities}}">
         <tr>
             <td>{{name}}</td>
             <td>{{main.temp}}</td>
-            <td>{{dt}}</td>
-            <td>{{id}}</td>
-            <td>{{main.temp * 9.0 / 5 + 32}}</td>
         </tr>
     </template>
 </table>
+<br>
 <section>
     <div>Data Zoom</div>
     <paper-slider id="zoom" pin snaps min="3" max="10" step="1" value="6"></paper-slider>
@@ -51,7 +49,7 @@
         document.querySelector("#zoom").addEventListener("change",
                 function(e) {
                     document.querySelector("google-map").clear();
-                    document.querySelector("core-ajax").url = "http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,"+ e.target.immediateValue+"&cluster=no";
+                    document.querySelector("core-ajax").url = "http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,"+ e.target.immediateValue+"&cluster=no&units=imperial";
                 }
         );
     });
