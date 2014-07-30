@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>HottestCities</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="import" href="bower_components/core-ajax/core-ajax.html">
+    <link rel="import" href="bower_components/google-map/google-map.html">
+    <link rel="import" href="bower_components/paper-slider/paper-slider.html">
+</head>
+<body>
+<core-ajax
+        auto
+        url="http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,6&cluster=no"
+        handleAs="json"></core-ajax>
+<table>
+    <template id="tableTemplate" repeat="{{cities}}">
+        <tr>
+            <td>{{name}}</td>
+            <td>{{main.temp}}</td>
+            <td>{{dt}}</td>
+            <td>{{id}}</td>
+            <td>{{main.temp * 9.0 / 5 + 32}}</td>
+        </tr>
+    </template>
+</table>
+<section>
+    <div>Data Zoom</div>
+    <paper-slider id="zoom" pin snaps min="3" max="10" step="1" value="6"></paper-slider>
+</section>
+<google-map fitToMarkers style ="height: 640px;width: 640px;display: block;">
+    <template id="mapTemplate" repeat="{{cities}}">
+        <google-map-marker latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}}"></google-map-marker>
+    </template>
+</google-map>
+<script>
+    document.addEventListener('polymer-ready', function() {
+        var ajax = document.querySelector("core-ajax");
+        ajax.addEventListener("core-response",
+                function(e) {
+                    var citiesSorted = e.detail.response.list.filter(function(e){return e.id > 4013708}).sort(function(a, b){return b.main.temp-a.main.temp}).slice(0,5);
+                    document.querySelector('#tableTemplate').model = {
+                        cities: citiesSorted
+                    };
+                    document.querySelector('#mapTemplate').model = {
+                        cities: citiesSorted
+                    };
+                }
+        );
+        document.querySelector("#zoom").addEventListener("change",
+                function(e) {
+                    document.querySelector("google-map").clear();
+                    document.querySelector("core-ajax").url = "http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,"+ e.target.immediateValue+"&cluster=no";
+                }
+        );
+    });
+</script>
+</body>
+</html>
