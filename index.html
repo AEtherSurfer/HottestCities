@@ -17,6 +17,7 @@
 <table>
     <template id="tableTemplate" repeat="{{cities}}">
         <tr>
+            <td>{{rank}}</td>
             <td>{{name}}</td>
             <td>{{main.temp}}</td>
         </tr>
@@ -25,11 +26,11 @@
 <br>
 <section>
     <div>Data Zoom</div>
-    <paper-slider id="zoom" pin snaps min="3" max="10" step="1" value="6"></paper-slider>
+    <paper-slider id="zoom" pin snaps min="4" max="10" step="1" value="6"></paper-slider>
 </section>
 <google-map fitToMarkers style ="height: 640px;width: 640px;display: block;">
     <template id="mapTemplate" repeat="{{cities}}">
-        <google-map-marker latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}}"></google-map-marker>
+        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}}"></google-map-marker>
     </template>
 </google-map>
 <script>
@@ -37,9 +38,21 @@
         var ajax = document.querySelector("core-ajax");
         ajax.addEventListener("core-response",
                 function(e) {
-                    var citiesSorted = e.detail.response.list.filter(function(e){return e.id > 4013708}).sort(function(a, b){return b.main.temp-a.main.temp}).slice(0,5);
+                    var cities = e.detail.response.list;
+                    var citiesFiltered = cities.filter(function(e){return e.id > 4018762 && e.id < 5881791});
+//                    var citiesFiltered = cities.filter(function(e){return e.id < 4018762 || e.id > 5881791});
+                    var citiesSorted = citiesFiltered.sort(function(a, b){return b.main.temp-a.main.temp});
+                    for (var i = 0; i < citiesSorted.length; ++i) {
+                        citiesSorted[i].rank = i+1;
+                        if (i < 5) {
+                            citiesSorted[i].icon = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + (i+1) + "|FFCC00|000000";
+                        } else {
+                            citiesSorted[i].icon = "http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png";
+                        }
+                    }
+                    var citiesTopFive = citiesSorted.slice(0,5);
                     document.querySelector('#tableTemplate').model = {
-                        cities: citiesSorted
+                        cities: citiesTopFive
                     };
                     document.querySelector('#mapTemplate').model = {
                         cities: citiesSorted
