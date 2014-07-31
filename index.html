@@ -12,7 +12,7 @@
 <body>
 <core-ajax
         auto
-        url="http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,6&cluster=no&units=imperial"
+        url="http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,7&cluster=yes&units=imperial"
         handleAs="json"></core-ajax>
 <table>
     <template id="tableTemplate" repeat="{{cities}}">
@@ -20,17 +20,14 @@
             <td>{{rank}}</td>
             <td>{{name}}</td>
             <td>{{main.temp}}</td>
+            <td>{{dtts}}</td>
         </tr>
     </template>
 </table>
 <br>
-<section>
-    <div>Data Zoom</div>
-    <paper-slider id="zoom" pin snaps min="4" max="10" step="1" value="6"></paper-slider>
-</section>
 <google-map fitToMarkers style ="height: 640px;width: 640px;display: block;">
     <template id="mapTemplate" repeat="{{cities}}">
-        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}}"></google-map-marker>
+        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}} {{id}}"></google-map-marker>
     </template>
 </google-map>
 <script>
@@ -39,11 +36,12 @@
         ajax.addEventListener("core-response",
                 function(e) {
                     var cities = e.detail.response.list;
-                    var citiesFiltered = cities.filter(function(e){return e.id > 4018762 && e.id < 5881791});
-//                    var citiesFiltered = cities.filter(function(e){return e.id < 4018762 || e.id > 5881791});
+//                    var citiesFiltered = cities.filter(function(e){return e.id > 4019260 && e.id < 5881791 && e.id != 5815135});
+                    var citiesFiltered = cities.filter(function(e){return e.id <= 4019260 || e.id >= 5881791});
                     var citiesSorted = citiesFiltered.sort(function(a, b){return b.main.temp-a.main.temp});
                     for (var i = 0; i < citiesSorted.length; ++i) {
                         citiesSorted[i].rank = i+1;
+                        citiesSorted[i].dtts = new Date(citiesSorted[i].dt * 1000);
                         if (i < 5) {
                             citiesSorted[i].icon = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + (i+1) + "|FFCC00|000000";
                         } else {
@@ -57,12 +55,6 @@
                     document.querySelector('#mapTemplate').model = {
                         cities: citiesSorted
                     };
-                }
-        );
-        document.querySelector("#zoom").addEventListener("change",
-                function(e) {
-                    document.querySelector("google-map").clear();
-                    document.querySelector("core-ajax").url = "http://api.openweathermap.org/data/2.5/box/city?bbox=-125,50,-66,24,"+ e.target.immediateValue+"&cluster=no&units=imperial";
                 }
         );
     });
