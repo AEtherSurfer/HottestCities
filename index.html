@@ -3409,6 +3409,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <td>{{rank}}</td>
             <td>{{name}}</td>
             <td>{{main.temp}}</td>
+            <td>{{id}}</td>
             <td>{{dtts}}</td>
         </tr>
     </template>
@@ -3416,7 +3417,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <br>
 <google-map fittomarkers="" style="height: 640px;width: 640px;display: block;">
     <template id="mapTemplate" repeat="{{cities}}">
-        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}} {{id}}"></google-map-marker>
+        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}} {{id}} {{dtts}}"></google-map-marker>
     </template>
 </google-map>
 <script>
@@ -3428,12 +3429,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     var citiesFiltered = cities.filter(function(e){return e.id > 4019260 && e.id < 5881791 && e.id != 5815135});
                     var citiesSorted = citiesFiltered.sort(function(a, b){return b.main.temp-a.main.temp});
                     for (var i = 0; i < citiesSorted.length; ++i) {
-                        citiesSorted[i].rank = i+1;
-                        citiesSorted[i].dtts = new Date(citiesSorted[i].dt * 1000);
+                        var city = citiesSorted[i];
+                        city.rank = i+1;
+                        city.dtts = new Date(city.dt * 1000);
                         if (i < 5) {
-                            citiesSorted[i].icon = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + (i+1) + "|FFCC00|000000";
+                            city.icon = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + (i+1) + "|FFCC00|000000";
+                        } else if (city.dt * 1000 < (Date.now() - 3 * 60 * 60 * 1000)) {
+                            city.icon = "https://storage.googleapis.com/support-kms-prod/SNP_2752068_en_v0";
                         } else {
-                            citiesSorted[i].icon = "http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png";
+                            city.icon = "https://storage.googleapis.com/support-kms-prod/SNP_2752125_en_v0";
                         }
                     }
                     var citiesTopFive = citiesSorted.slice(0,5);
