@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>HottestWeatherStations</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="import" href="bower_components/core-ajax/core-ajax.html">
+    <link rel="import" href="bower_components/google-map/google-map.html">
+    <link rel="import" href="bower_components/paper-slider/paper-slider.html">
+</head>
+<body>
+<core-ajax
+        auto
+        url="http://api.openweathermap.org/data/2.5/box/station?cluster_distance=120&cluster=yes&bbox=-125,50,-66,24,7&cluster=yes&units=imperial"
+        handleAs="json"></core-ajax>
+<table>
+    <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Temp</th>
+        <th>ID</th>
+        <th>Report Time</th>
+    </tr>
+    <template id="tableTemplate" repeat="{{cities}}">
+        <tr>
+            <td>{{rank}}</td>
+            <td>{{name}}</td>
+            <td>{{main.temp}}</td>
+            <td>{{id}}</td>
+            <td>{{dtts}}</td>
+        </tr>
+    </template>
+</table>
+<br>
+<google-map fitToMarkers style ="height: 640px;width: 640px;display: block;">
+    <template id="mapTemplate" repeat="{{cities}}">
+        <google-map-marker icon="{{icon}}" latitude="{{coord.lat}}" longitude="{{coord.lon}}" title="{{name}} {{main.temp}} {{id}} {{dtts}}"></google-map-marker>
+    </template>
+</google-map>
+<script>
+    document.addEventListener('polymer-ready', function() {
+        var ajax = document.querySelector("core-ajax");
+        ajax.addEventListener("core-response",
+                function(e) {
+                    var cities = e.detail.response.list;
+                    var citiesFiltered = cities.filter(function(e){return e.name[0] == 'K'});
+                    var citiesSorted = citiesFiltered.sort(function(a, b){
+                        var at = -300,bt = -300;
+                        if(a.main && a.main.temp) at = a.main.temp;
+                        if(b.main && b.main.temp) bt = b.main.temp;
+                        if(!a.main || !b.main || !a.main.temp || !b.main.temp) console.log(at, bt, bt-at);
+                        return bt-at
+                    });
+                    for (var i = 0; i < citiesSorted.length; ++i) {
+                        var city = citiesSorted[i];
+                        city.rank = i+1;
+                        city.dtts = new Date(city.dt * 1000);
+                        if (i < 5) {
+                            city.icon = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + (i+1) + "|FFCC00|000000";
+                        } else if (city.dt * 1000 < (Date.now() - 3 * 60 * 60 * 1000)) {
+                            city.icon = "https://storage.googleapis.com/support-kms-prod/SNP_2752068_en_v0";
+                        } else {
+                            city.icon = "https://storage.googleapis.com/support-kms-prod/SNP_2752125_en_v0";
+                        }
+                    }
+                    document.querySelector('#tableTemplate').model = {
+                        cities: citiesSorted.slice(0,5)
+                    };
+                    document.querySelector('#mapTemplate').model = {
+                        cities: citiesSorted
+                    };
+                }
+        );
+    });
+</script>
+</body>
+</html>
